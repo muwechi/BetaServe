@@ -3,6 +3,7 @@ import DeviceSimulator from './components/DeviceSimulator';
 import SuperadminDashboard from './components/SuperadminDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import ResidentPortal from './components/ResidentPortal';
+import SecurityGatePortal from './components/SecurityGatePortal';
 
 import {
   initialEstates,
@@ -24,7 +25,7 @@ export default function App() {
   const [announcements, setAnnouncements] = useState(initialAnnouncements);
 
   // Selector states
-  const [role, setRole] = useState('superadmin'); // superadmin, admin, resident
+  const [role, setRole] = useState('superadmin'); // superadmin, admin, resident, security
   const [selectedAdminId, setSelectedAdminId] = useState(initialAdmins[0].id);
   const [selectedResidentId, setSelectedResidentId] = useState(initialResidents[0].id);
   const [platform, setPlatform] = useState('ios'); // ios or android
@@ -84,6 +85,16 @@ export default function App() {
               }`}
             >
               👤 Resident
+            </button>
+            <button
+              onClick={() => setRole('security')}
+              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all duration-300 ${
+                role === 'security'
+                  ? 'bg-red-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              🛡️ Security Gate
             </button>
           </div>
 
@@ -161,7 +172,7 @@ export default function App() {
                 currentAdmin={currentAdmin}
                 platform={platform}
               />
-            ) : (
+            ) : role === 'resident' ? (
               <ResidentPortal
                 estates={estates}
                 currentResident={currentResident}
@@ -171,6 +182,13 @@ export default function App() {
                 serviceRequests={serviceRequests}
                 setServiceRequests={setServiceRequests}
                 serviceCats={serviceCategories}
+                platform={platform}
+              />
+            ) : (
+              <SecurityGatePortal
+                estates={estates}
+                visitorPasses={visitorPasses}
+                setVisitorPasses={setVisitorPasses}
                 platform={platform}
               />
             )}
@@ -187,27 +205,27 @@ export default function App() {
               Use the platform switcher above the phone simulation container to alternate between the elegant <strong className="text-blue-400">iOS layout shell</strong> and the material <strong className="text-green-400">Android layout shell</strong> in real-time.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
-              <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/60 flex flex-col justify-between">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-5">
+              <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800/60 flex flex-col justify-between">
                 <div>
-                  <span className="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-extrabold uppercase">Superadmin</span>
-                  <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
-                    Onboard new residential estates, manage estate billing tiers, provision administrators, and review marketplace provider analytics.
+                  <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded font-extrabold uppercase">Superadmin</span>
+                  <p className="text-[10px] text-slate-400 mt-2 leading-relaxed">
+                    Onboard residential estates, configure pricing billing, and provision administrators.
                   </p>
                 </div>
                 <button
                   onClick={() => setRole('superadmin')}
-                  className="mt-3 text-[11px] font-bold text-indigo-400 hover:underline flex items-center gap-0.5"
+                  className="mt-3 text-[10px] font-bold text-indigo-400 hover:underline flex items-center"
                 >
                   Superadmin view →
                 </button>
               </div>
 
-              <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/60 flex flex-col justify-between">
+              <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800/60 flex flex-col justify-between">
                 <div>
-                  <span className="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-extrabold uppercase">Estate Admin</span>
-                  <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
-                    Track directories, publish notices, generate temporary secure guest passes, and dispatch certified service contractors.
+                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-extrabold uppercase">Estate Admin</span>
+                  <p className="text-[10px] text-slate-400 mt-2 leading-relaxed">
+                    Monitor directories, publish notices, and dispatch certified service contractors.
                   </p>
                 </div>
                 <button
@@ -215,17 +233,17 @@ export default function App() {
                     setRole('admin');
                     setSelectedAdminId(admins[0].id);
                   }}
-                  className="mt-3 text-[11px] font-bold text-emerald-400 hover:underline flex items-center gap-0.5"
+                  className="mt-3 text-[10px] font-bold text-emerald-400 hover:underline flex items-center"
                 >
                   Admin view →
                 </button>
               </div>
 
-              <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/60 flex flex-col justify-between">
+              <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800/60 flex flex-col justify-between">
                 <div>
-                  <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-extrabold uppercase">Resident Hub</span>
-                  <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
-                    Read estate bulletins, generate guest PIN codes directly, and book professional maintenance services with budget estimation.
+                  <span className="text-[10px] bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded font-extrabold uppercase">Resident Hub</span>
+                  <p className="text-[10px] text-slate-400 mt-2 leading-relaxed">
+                    Read estate bulletins, request maintenance dispatches, and generate guest passes.
                   </p>
                 </div>
                 <button
@@ -233,9 +251,26 @@ export default function App() {
                     setRole('resident');
                     setSelectedResidentId(residents[0].id);
                   }}
-                  className="mt-3 text-[11px] font-bold text-blue-400 hover:underline flex items-center gap-0.5"
+                  className="mt-3 text-[10px] font-bold text-blue-400 hover:underline flex items-center"
                 >
                   Resident view →
+                </button>
+              </div>
+
+              <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800/60 flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] bg-red-500/20 text-red-300 px-1.5 py-0.5 rounded font-extrabold uppercase">Gate Guard</span>
+                  <p className="text-[10px] text-slate-400 mt-2 leading-relaxed">
+                    Scan or enter 6-digit access PIN codes to verify guest profiles and track entries.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setRole('security');
+                  }}
+                  className="mt-3 text-[10px] font-bold text-red-400 hover:underline flex items-center"
+                >
+                  Security view →
                 </button>
               </div>
             </div>
