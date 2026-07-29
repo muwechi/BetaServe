@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import DeviceSimulator from './components/DeviceSimulator';
 import SuperadminDashboard from './components/SuperadminDashboard';
 import AdminDashboard from './components/AdminDashboard';
+import ResidentPortal from './components/ResidentPortal';
 
 import {
   initialEstates,
@@ -23,11 +24,13 @@ export default function App() {
   const [announcements, setAnnouncements] = useState(initialAnnouncements);
 
   // Selector states
-  const [role, setRole] = useState('superadmin'); // superadmin or admin
+  const [role, setRole] = useState('superadmin'); // superadmin, admin, resident
   const [selectedAdminId, setSelectedAdminId] = useState(initialAdmins[0].id);
+  const [selectedResidentId, setSelectedResidentId] = useState(initialResidents[0].id);
   const [platform, setPlatform] = useState('ios'); // ios or android
 
   const currentAdmin = admins.find(a => a.id === selectedAdminId) || admins[0];
+  const currentResident = residents.find(r => r.id === selectedResidentId) || residents[0];
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
@@ -72,6 +75,16 @@ export default function App() {
             >
               🏢 Estate Admin
             </button>
+            <button
+              onClick={() => setRole('resident')}
+              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all duration-300 ${
+                role === 'resident'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              👤 Resident
+            </button>
           </div>
 
           {/* Active Admin Switcher (Shows up when Role is Admin) */}
@@ -88,6 +101,27 @@ export default function App() {
                   return (
                     <option key={adm.id} value={adm.id} className="bg-slate-900 text-slate-100">
                       {adm.name} ({estate ? estate.name : 'Estate'})
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          )}
+
+          {/* Active Resident Switcher (Shows up when Role is Resident) */}
+          {role === 'resident' && (
+            <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700/50">
+              <span className="text-[10px] uppercase font-extrabold text-slate-400">Acting Resident:</span>
+              <select
+                value={selectedResidentId}
+                onChange={(e) => setSelectedResidentId(e.target.value)}
+                className="bg-transparent text-xs font-semibold text-blue-300 focus:outline-none cursor-pointer"
+              >
+                {residents.map((res) => {
+                  const estate = estates.find((e) => e.id === res.estateId);
+                  return (
+                    <option key={res.id} value={res.id} className="bg-slate-900 text-slate-100">
+                      {res.name} ({estate ? estate.name : 'Estate'})
                     </option>
                   );
                 })}
@@ -113,7 +147,7 @@ export default function App() {
                 serviceCats={serviceCategories}
                 platform={platform}
               />
-            ) : (
+            ) : role === 'admin' ? (
               <AdminDashboard
                 estates={estates}
                 residents={residents}
@@ -125,6 +159,18 @@ export default function App() {
                 announcements={announcements}
                 setAnnouncements={setAnnouncements}
                 currentAdmin={currentAdmin}
+                platform={platform}
+              />
+            ) : (
+              <ResidentPortal
+                estates={estates}
+                currentResident={currentResident}
+                announcements={announcements}
+                visitorPasses={visitorPasses}
+                setVisitorPasses={setVisitorPasses}
+                serviceRequests={serviceRequests}
+                setServiceRequests={setServiceRequests}
+                serviceCats={serviceCategories}
                 platform={platform}
               />
             )}
@@ -141,33 +187,55 @@ export default function App() {
               Use the platform switcher above the phone simulation container to alternate between the elegant <strong className="text-blue-400">iOS layout shell</strong> and the material <strong className="text-green-400">Android layout shell</strong> in real-time.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
-              <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/60">
-                <span className="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-extrabold">👑 SUPERADMIN PORTAL</span>
-                <p className="text-xs text-slate-400 mt-2.5 leading-relaxed">
-                  Allows global application controllers to register and deploy new residential estates, provision and manage estate admins, review platform metrics, and oversee service categories.
-                </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
+              <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/60 flex flex-col justify-between">
+                <div>
+                  <span className="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-extrabold uppercase">Superadmin</span>
+                  <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+                    Onboard new residential estates, manage estate billing tiers, provision administrators, and review marketplace provider analytics.
+                  </p>
+                </div>
                 <button
                   onClick={() => setRole('superadmin')}
-                  className="mt-3.5 text-xs font-bold text-indigo-400 hover:underline flex items-center gap-1"
+                  className="mt-3 text-[11px] font-bold text-indigo-400 hover:underline flex items-center gap-0.5"
                 >
-                  Switch to Superadmin view →
+                  Superadmin view →
                 </button>
               </div>
 
-              <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/60">
-                <span className="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-extrabold">🏢 ESTATE ADMIN PORTAL</span>
-                <p className="text-xs text-slate-400 mt-2.5 leading-relaxed">
-                  Empowers specific estate property managers to track resident directory records, generate temporary secure guest gate-passes, publish bulletins, and dispatch professional service contractors.
-                </p>
+              <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/60 flex flex-col justify-between">
+                <div>
+                  <span className="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-extrabold uppercase">Estate Admin</span>
+                  <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+                    Track directories, publish notices, generate temporary secure guest passes, and dispatch certified service contractors.
+                  </p>
+                </div>
                 <button
                   onClick={() => {
                     setRole('admin');
                     setSelectedAdminId(admins[0].id);
                   }}
-                  className="mt-3.5 text-xs font-bold text-emerald-400 hover:underline flex items-center gap-1"
+                  className="mt-3 text-[11px] font-bold text-emerald-400 hover:underline flex items-center gap-0.5"
                 >
-                  Switch to Admin view →
+                  Admin view →
+                </button>
+              </div>
+
+              <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/60 flex flex-col justify-between">
+                <div>
+                  <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-extrabold uppercase">Resident Hub</span>
+                  <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+                    Read estate bulletins, generate guest PIN codes directly, and book professional maintenance services with budget estimation.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setRole('resident');
+                    setSelectedResidentId(residents[0].id);
+                  }}
+                  className="mt-3 text-[11px] font-bold text-blue-400 hover:underline flex items-center gap-0.5"
+                >
+                  Resident view →
                 </button>
               </div>
             </div>
